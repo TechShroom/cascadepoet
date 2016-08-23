@@ -180,4 +180,13 @@ final class Util {
         }
         return sorted;
     }
+
+    static <T extends Comparable<T> & OpenModifier> int doCompare(OpenModifier a, OpenModifier b) {
+        // a and b will be the same type
+        @SuppressWarnings("unchecked")
+        T aT = (T) a;
+        @SuppressWarnings("unchecked")
+        T bT = (T) b;
+        return aT.compareTo(bT);
+    }
 }

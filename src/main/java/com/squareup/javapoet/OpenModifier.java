@@ -13,19 +13,25 @@ import javax.lang.model.element.Modifier;
 public interface OpenModifier {
 
     /**
-     * Orders java modifiers before custom modifiers, and java modifiers by the
-     * enum ordering.
+     * Orders comparable modifiers before other modifiers, and comparable modifiers by the
+     * fully qualified name of the class.
      */
     Comparator<OpenModifier> COMPARATOR = (a, b) -> {
-        boolean aJava = a instanceof Java;
-        boolean bJava = b instanceof Java;
-        if (aJava && bJava) {
-            return ((Java) a).wrapped.compareTo(((Java) b).wrapped);
+        if (a == null || b == null) {
+            return 0;
         }
-        if (aJava) {
+        if (a.getClass() == b.getClass() && Comparable.class.isAssignableFrom(a.getClass())) {
+            return Util.doCompare(a, b);
+        }
+        boolean aComp = a instanceof Comparable;
+        boolean bComp = b instanceof Comparable;
+        if (aComp && bComp) {
+            return a.getClass().getName().compareTo(b.getClass().getName());
+        }
+        if (aComp /* && !bComp implied */) {
             return 1;
         }
-        if (bJava) {
+        if (bComp /* && !aComp implied */) {
             return -1;
         }
         return 0;
@@ -43,6 +49,7 @@ public interface OpenModifier {
     OpenModifier SYNCHRONIZED = Java.valueOf(Modifier.SYNCHRONIZED);
     OpenModifier NATIVE = Java.valueOf(Modifier.NATIVE);
     OpenModifier STRICTFP = Java.valueOf(Modifier.STRICTFP);
+    OpenModifier UTILITY = Cascade.UTILITY;
 
     final class Java implements OpenModifier {
 
@@ -75,6 +82,16 @@ public interface OpenModifier {
             return this.wrapped.name();
         }
 
+    }
+    
+    enum Cascade implements OpenModifier {
+        UTILITY;
+        
+        @Override
+        public String toString() {
+            return name().toLowerCase(java.util.Locale.US);
+        }
+        
     }
 
     /**
