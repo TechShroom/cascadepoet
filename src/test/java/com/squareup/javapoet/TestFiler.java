@@ -25,6 +25,7 @@ import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
+
 import javax.annotation.processing.Filer;
 import javax.lang.model.element.Element;
 import javax.tools.FileObject;
@@ -33,55 +34,65 @@ import javax.tools.JavaFileObject;
 import javax.tools.SimpleJavaFileObject;
 
 final class TestFiler implements Filer {
-  class Source extends SimpleJavaFileObject {
-    private final Path path;
-    protected Source(Path path) {
-      super(path.toUri(), Kind.SOURCE);
-      this.path = path;
+
+    class Source extends SimpleJavaFileObject {
+
+        private final Path path;
+
+        protected Source(Path path) {
+            super(path.toUri(), Kind.SOURCE);
+            this.path = path;
+        }
+
+        @Override
+        public OutputStream openOutputStream() throws IOException {
+            Path parent = this.path.getParent();
+            if (!Files.exists(parent))
+                TestFiler.this.fileSystemProvider.createDirectory(parent);
+            return TestFiler.this.fileSystemProvider.newOutputStream(this.path);
+        }
     }
-    @Override public OutputStream openOutputStream() throws IOException {
-      Path parent = path.getParent();
-      if (!Files.exists(parent)) fileSystemProvider.createDirectory(parent);
-      return fileSystemProvider.newOutputStream(path);
+
+    private final String separator;
+    private final Path fileSystemRoot;
+    private final FileSystemProvider fileSystemProvider;
+    private final Map<Path, Set<Element>> originatingElementsMap;
+
+    public TestFiler(FileSystem fileSystem, Path fsRoot) {
+        this.separator = fileSystem.getSeparator();
+        this.fileSystemRoot = fsRoot;
+        this.fileSystemProvider = fileSystem.provider();
+        this.originatingElementsMap = new LinkedHashMap<>();
     }
-  }
 
-  private final String separator;
-  private final Path fileSystemRoot;
-  private final FileSystemProvider fileSystemProvider;
-  private final Map<Path, Set<Element>> originatingElementsMap;
+    public Set<Element> getOriginatingElements(Path path) {
+        return this.originatingElementsMap.get(path);
+    }
 
-  public TestFiler(FileSystem fileSystem, Path fsRoot) {
-    separator = fileSystem.getSeparator();
-    fileSystemRoot = fsRoot;
-    fileSystemProvider = fileSystem.provider();
-    originatingElementsMap = new LinkedHashMap<>();
-  }
+    @Override
+    public JavaFileObject createSourceFile(CharSequence name, Element... originatingElements) throws IOException {
+        String relative = name.toString().replace(".", this.separator) + ".java"; // Assumes
+                                                                                  // well-formed.
+        Path path = this.fileSystemRoot.resolve(relative);
+        this.originatingElementsMap.put(path, Util.immutableSet(Arrays.asList(originatingElements)));
+        return new Source(path);
+    }
 
-  public Set<Element> getOriginatingElements(Path path) {
-    return originatingElementsMap.get(path);
-  }
+    @Override
+    public JavaFileObject createClassFile(CharSequence name, Element... originatingElements) throws IOException {
+        throw new UnsupportedOperationException("Not implemented.");
+    }
 
-  @Override public JavaFileObject createSourceFile(
-      CharSequence name, Element... originatingElements) throws IOException {
-    String relative = name.toString().replace(".", separator) + ".java"; // Assumes well-formed.
-    Path path = fileSystemRoot.resolve(relative);
-    originatingElementsMap.put(path, Util.immutableSet(Arrays.asList(originatingElements)));
-    return new Source(path);
-  }
+    @Override
+    public FileObject
+            createResource(JavaFileManager.Location location, CharSequence pkg, CharSequence relativeName, Element... originatingElements)
+                    throws IOException {
+        throw new UnsupportedOperationException("Not implemented.");
+    }
 
-  @Override public JavaFileObject createClassFile(CharSequence name, Element... originatingElements)
-      throws IOException {
-    throw new UnsupportedOperationException("Not implemented.");
-  }
-
-  @Override public FileObject createResource(JavaFileManager.Location location, CharSequence pkg,
-      CharSequence relativeName, Element... originatingElements) throws IOException {
-    throw new UnsupportedOperationException("Not implemented.");
-  }
-
-  @Override public FileObject getResource(JavaFileManager.Location location, CharSequence pkg,
-      CharSequence relativeName) throws IOException {
-    throw new UnsupportedOperationException("Not implemented.");
-  }
+    @Override
+    public FileObject getResource(JavaFileManager.Location location, CharSequence pkg, CharSequence relativeName)
+            throws IOException {
+        throw new UnsupportedOperationException("Not implemented.");
+    }
 }

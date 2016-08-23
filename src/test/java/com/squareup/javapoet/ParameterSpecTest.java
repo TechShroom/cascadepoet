@@ -15,32 +15,32 @@
  */
 package com.squareup.javapoet;
 
-import org.junit.Test;
-
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.fail;
 
-import javax.lang.model.element.Modifier;
+import org.junit.Test;
 
 public class ParameterSpecTest {
-  @Test public void equalsAndHashCode() {
-    ParameterSpec a = ParameterSpec.builder(int.class, "foo").build();
-    ParameterSpec b = ParameterSpec.builder(int.class, "foo").build();
-    assertThat(a.equals(b)).isTrue();
-    assertThat(a.hashCode()).isEqualTo(b.hashCode());
-    a = ParameterSpec.builder(int.class, "i").addModifiers(Modifier.STATIC).build();
-    b = ParameterSpec.builder(int.class, "i").addModifiers(Modifier.STATIC).build();
-    assertThat(a.equals(b)).isTrue();
-    assertThat(a.hashCode()).isEqualTo(b.hashCode());
-  }
 
-  @Test public void nullAnnotationsAddition() {
-    try {
-      ParameterSpec.builder(int.class, "foo").addAnnotations(null);
-      fail();
-    } catch (Exception e) {
-      assertThat(e.getMessage())
-          .isEqualTo("annotationSpecs == null");
+    @Test
+    public void equalsAndHashCode() {
+        ParameterSpec a = ParameterSpec.builder(int.class, "foo").build();
+        ParameterSpec b = ParameterSpec.builder(int.class, "foo").build();
+        assertThat(a.equals(b)).isTrue();
+        assertThat(a.hashCode()).isEqualTo(b.hashCode());
+        a = ParameterSpec.builder(int.class, "i").addModifiers(OpenModifier.STATIC).build();
+        b = ParameterSpec.builder(int.class, "i").addModifiers(OpenModifier.STATIC).build();
+        assertThat(a.equals(b)).isTrue();
+        assertThat(a.hashCode()).isEqualTo(b.hashCode());
     }
-  }
+
+    @Test
+    public void nullAnnotationsAddition() {
+        try {
+            ParameterSpec.builder(int.class, "foo").addAnnotations(null);
+            fail();
+        } catch (Exception e) {
+            assertThat(e.getMessage()).isEqualTo("annotationSpecs == null");
+        }
+    }
 }

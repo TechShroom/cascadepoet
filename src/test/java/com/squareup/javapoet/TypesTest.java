@@ -26,15 +26,17 @@ import com.google.testing.compile.CompilationRule;
 
 @RunWith(JUnit4.class)
 public final class TypesTest extends AbstractTypesTest {
-  @Rule public final CompilationRule compilation = new CompilationRule();
 
-  @Override
-  protected Elements getElements() {
-    return compilation.getElements();
-  }
+    @Rule
+    public final CompilationRule compilation = new CompilationRule();
 
-  @Override
-  protected Types getTypes() {
-    return compilation.getTypes();
-  }
+    @Override
+    protected Elements getElements() {
+        return this.compilation.getElements();
+    }
+
+    @Override
+    protected Types getTypes() {
+        return this.compilation.getTypes();
+    }
 }

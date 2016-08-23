@@ -15,6 +15,9 @@
  */
 package com.squareup.javapoet;
 
+import static com.squareup.javapoet.Util.checkArgument;
+import static com.squareup.javapoet.Util.checkNotNull;
+
 import java.io.IOException;
 import java.io.StringWriter;
 import java.lang.reflect.Type;
@@ -22,125 +25,129 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
-import javax.lang.model.SourceVersion;
-import javax.lang.model.element.Modifier;
 
-import static com.squareup.javapoet.Util.checkArgument;
-import static com.squareup.javapoet.Util.checkNotNull;
+import javax.lang.model.SourceVersion;
 
 /** A generated parameter declaration. */
 public final class ParameterSpec {
-  public final String name;
-  public final List<AnnotationSpec> annotations;
-  public final Set<Modifier> modifiers;
-  public final TypeName type;
 
-  private ParameterSpec(Builder builder) {
-    this.name = checkNotNull(builder.name, "name == null");
-    this.annotations = Util.immutableList(builder.annotations);
-    this.modifiers = Util.immutableSet(builder.modifiers);
-    this.type = checkNotNull(builder.type, "type == null");
-  }
+    public final String name;
+    public final List<AnnotationSpec> annotations;
+    public final Set<OpenModifier> modifiers;
+    public final TypeName type;
 
-  public boolean hasModifier(Modifier modifier) {
-    return modifiers.contains(modifier);
-  }
-
-  void emit(CodeWriter codeWriter, boolean varargs) throws IOException {
-    codeWriter.emitAnnotations(annotations, true);
-    codeWriter.emitModifiers(modifiers);
-    if (varargs) {
-      codeWriter.emit("$T... $L", TypeName.arrayComponent(type), name);
-    } else {
-      codeWriter.emit("$T $L", type, name);
-    }
-  }
-
-  @Override public boolean equals(Object o) {
-    if (this == o) return true;
-    if (o == null) return false;
-    if (getClass() != o.getClass()) return false;
-    return toString().equals(o.toString());
-  }
-
-  @Override public int hashCode() {
-    return toString().hashCode();
-  }
-
-  @Override public String toString() {
-    StringWriter out = new StringWriter();
-    try {
-      CodeWriter codeWriter = new CodeWriter(out);
-      emit(codeWriter, false);
-      return out.toString();
-    } catch (IOException e) {
-      throw new AssertionError();
-    }
-  }
-
-  public static Builder builder(TypeName type, String name, Modifier... modifiers) {
-    checkNotNull(type, "type == null");
-    checkArgument(SourceVersion.isName(name), "not a valid name: %s", name);
-    return new Builder(type, name)
-        .addModifiers(modifiers);
-  }
-
-  public static Builder builder(Type type, String name, Modifier... modifiers) {
-    return builder(TypeName.get(type), name, modifiers);
-  }
-
-  public Builder toBuilder() {
-    return toBuilder(type, name);
-  }
-
-  Builder toBuilder(TypeName type, String name) {
-    Builder builder = new Builder(type, name);
-    builder.annotations.addAll(annotations);
-    builder.modifiers.addAll(modifiers);
-    return builder;
-  }
-
-  public static final class Builder {
-    private final TypeName type;
-    private final String name;
-
-    private final List<AnnotationSpec> annotations = new ArrayList<>();
-    private final List<Modifier> modifiers = new ArrayList<>();
-
-    private Builder(TypeName type, String name) {
-      this.type = type;
-      this.name = name;
+    private ParameterSpec(Builder builder) {
+        this.name = checkNotNull(builder.name, "name == null");
+        this.annotations = Util.immutableList(builder.annotations);
+        this.modifiers = Util.immutableSet(builder.modifiers);
+        this.type = checkNotNull(builder.type, "type == null");
     }
 
-    public Builder addAnnotations(Iterable<AnnotationSpec> annotationSpecs) {
-      checkArgument(annotationSpecs != null, "annotationSpecs == null");
-      for (AnnotationSpec annotationSpec : annotationSpecs) {
-        this.annotations.add(annotationSpec);
-      }
-      return this;
+    public boolean hasModifier(OpenModifier modifier) {
+        return this.modifiers.contains(modifier);
     }
 
-    public Builder addAnnotation(AnnotationSpec annotationSpec) {
-      this.annotations.add(annotationSpec);
-      return this;
+    void emit(CodeWriter codeWriter, boolean varargs) throws IOException {
+        codeWriter.emitAnnotations(this.annotations, true);
+        codeWriter.emitModifiers(this.modifiers);
+        if (varargs) {
+            codeWriter.emit("$T... $L", TypeName.arrayComponent(this.type), this.name);
+        } else {
+            codeWriter.emit("$T $L", this.type, this.name);
+        }
     }
 
-    public Builder addAnnotation(ClassName annotation) {
-      this.annotations.add(AnnotationSpec.builder(annotation).build());
-      return this;
+    @Override
+    public boolean equals(Object o) {
+        if (this == o)
+            return true;
+        if (o == null)
+            return false;
+        if (getClass() != o.getClass())
+            return false;
+        return toString().equals(o.toString());
     }
 
-    public Builder addAnnotation(Class<?> annotation) {
-      return addAnnotation(ClassName.get(annotation));
+    @Override
+    public int hashCode() {
+        return toString().hashCode();
     }
 
-    public Builder addModifiers(Modifier... modifiers) {
-      Collections.addAll(this.modifiers, modifiers);
-      return this;
+    @Override
+    public String toString() {
+        StringWriter out = new StringWriter();
+        try {
+            CodeWriter codeWriter = new CodeWriter(out);
+            emit(codeWriter, false);
+            return out.toString();
+        } catch (IOException e) {
+            throw new AssertionError();
+        }
     }
 
-    public ParameterSpec build() {
-      return new ParameterSpec(this);
+    public static Builder builder(TypeName type, String name, OpenModifier... modifiers) {
+        checkNotNull(type, "type == null");
+        checkArgument(SourceVersion.isName(name), "not a valid name: %s", name);
+        return new Builder(type, name).addModifiers(modifiers);
     }
-  }
+
+    public static Builder builder(Type type, String name, OpenModifier... modifiers) {
+        return builder(TypeName.get(type), name, modifiers);
+    }
+
+    public Builder toBuilder() {
+        return toBuilder(this.type, this.name);
+    }
+
+    Builder toBuilder(TypeName type, String name) {
+        Builder builder = new Builder(type, name);
+        builder.annotations.addAll(this.annotations);
+        builder.modifiers.addAll(this.modifiers);
+        return builder;
+    }
+
+    public static final class Builder {
+
+        private final TypeName type;
+        private final String name;
+
+        private final List<AnnotationSpec> annotations = new ArrayList<>();
+        private final List<OpenModifier> modifiers = new ArrayList<>();
+
+        private Builder(TypeName type, String name) {
+            this.type = type;
+            this.name = name;
+        }
+
+        public Builder addAnnotations(Iterable<AnnotationSpec> annotationSpecs) {
+            checkArgument(annotationSpecs != null, "annotationSpecs == null");
+            for (AnnotationSpec annotationSpec : annotationSpecs) {
+                this.annotations.add(annotationSpec);
+            }
+            return this;
+        }
+
+        public Builder addAnnotation(AnnotationSpec annotationSpec) {
+            this.annotations.add(annotationSpec);
+            return this;
+        }
+
+        public Builder addAnnotation(ClassName annotation) {
+            this.annotations.add(AnnotationSpec.builder(annotation).build());
+            return this;
+        }
+
+        public Builder addAnnotation(Class<?> annotation) {
+            return addAnnotation(ClassName.get(annotation));
+        }
+
+        public Builder addModifiers(OpenModifier... modifiers) {
+            Collections.addAll(this.modifiers, modifiers);
+            return this;
+        }
+
+        public ParameterSpec build() {
+            return new ParameterSpec(this);
+        }
+    }
 }

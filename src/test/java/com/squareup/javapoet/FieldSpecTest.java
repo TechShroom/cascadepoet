@@ -15,33 +15,32 @@
  */
 package com.squareup.javapoet;
 
-import org.junit.Test;
-
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.fail;
 
-import javax.lang.model.element.Modifier;
+import org.junit.Test;
 
 public class FieldSpecTest {
-  @Test public void equalsAndHashCode() {
-    FieldSpec a = FieldSpec.builder(int.class, "foo").build();
-    FieldSpec b = FieldSpec.builder(int.class, "foo").build();
-    assertThat(a.equals(b)).isTrue();
-    assertThat(a.hashCode()).isEqualTo(b.hashCode());
-    a = FieldSpec.builder(int.class, "FOO", Modifier.PUBLIC, Modifier.STATIC).build();
-    b = FieldSpec.builder(int.class, "FOO", Modifier.PUBLIC, Modifier.STATIC).build();
-    assertThat(a.equals(b)).isTrue();
-    assertThat(a.hashCode()).isEqualTo(b.hashCode());
-  }
 
-  @Test public void nullAnnotationsAddition() {
-    try {
-      FieldSpec.builder(int.class, "foo").addAnnotations(null);
-      fail();
+    @Test
+    public void equalsAndHashCode() {
+        FieldSpec a = FieldSpec.builder(int.class, "foo").build();
+        FieldSpec b = FieldSpec.builder(int.class, "foo").build();
+        assertThat(a.equals(b)).isTrue();
+        assertThat(a.hashCode()).isEqualTo(b.hashCode());
+        a = FieldSpec.builder(int.class, "FOO", OpenModifier.PUBLIC, OpenModifier.STATIC).build();
+        b = FieldSpec.builder(int.class, "FOO", OpenModifier.PUBLIC, OpenModifier.STATIC).build();
+        assertThat(a.equals(b)).isTrue();
+        assertThat(a.hashCode()).isEqualTo(b.hashCode());
     }
-    catch (IllegalArgumentException expected) {
-      assertThat(expected.getMessage())
-          .isEqualTo("annotationSpecs == null");
+
+    @Test
+    public void nullAnnotationsAddition() {
+        try {
+            FieldSpec.builder(int.class, "foo").addAnnotations(null);
+            fail();
+        } catch (IllegalArgumentException expected) {
+            assertThat(expected.getMessage()).isEqualTo("annotationSpecs == null");
+        }
     }
-  }
 }

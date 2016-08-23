@@ -1,7 +1,7 @@
-JavaPoet
+CascadePoet
 ========
 
-`JavaPoet` is a Java API for generating `.java` source files.
+`CascadePoet` is a Java API for generating `.cscd` source files.
 
 Source file generation can be useful when doing things such as annotation processing or interacting
 with metadata files (e.g., database schemas, protocol formats). By generating code, you eliminate
@@ -166,10 +166,10 @@ public static void main(String[] args) throws Exception {
       .addMethod(whatsMyName("eminem"))
       .addMethod(whatsMyName("marshallMathers"))
       .build();
-      
+
   JavaFile javaFile = JavaFile.builder("com.example.helloworld", helloWorld)
       .build();
-      
+
   javaFile.writeTo(System.out);
 }
 
@@ -210,15 +210,15 @@ MethodSpec today = MethodSpec.methodBuilder("today")
     .returns(Date.class)
     .addStatement("return new $T()", Date.class)
     .build();
-    
+
 TypeSpec helloWorld = TypeSpec.classBuilder("HelloWorld")
     .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
     .addMethod(today)
     .build();
-    
+
 JavaFile javaFile = JavaFile.builder("com.example.helloworld", helloWorld)
     .build();
-    
+
 javaFile.writeTo(System.out);
 ```
 
@@ -387,7 +387,7 @@ MethodSpec hexDigit = MethodSpec.methodBuilder("hexDigit")
     .returns(char.class)
     .addStatement("return (char) (i < 10 ? i + '0' : i - 10 + 'a')")
     .build();
-    
+
 MethodSpec byteToHex = MethodSpec.methodBuilder("byteToHex")
     .addParameter(int.class, "b")
     .returns(String.class)
@@ -407,7 +407,7 @@ body. This is only legal if the enclosing class is either abstract or an interfa
 MethodSpec flux = MethodSpec.methodBuilder("flux")
     .addModifiers(Modifier.ABSTRACT, Modifier.PROTECTED)
     .build();
-    
+
 TypeSpec helloWorld = TypeSpec.classBuilder("HelloWorld")
     .addModifiers(Modifier.PUBLIC, Modifier.ABSTRACT)
     .addMethod(flux)
@@ -440,7 +440,7 @@ MethodSpec flux = MethodSpec.constructorBuilder()
     .addParameter(String.class, "greeting")
     .addStatement("this.$N = $N", "greeting", "greeting")
     .build();
-    
+
 TypeSpec helloWorld = TypeSpec.classBuilder("HelloWorld")
     .addModifiers(Modifier.PUBLIC)
     .addField(String.class, "greeting", Modifier.PRIVATE, Modifier.FINAL)
@@ -497,7 +497,7 @@ Like parameters, fields can be created either with builders or by using convenie
 FieldSpec android = FieldSpec.builder(String.class, "android")
     .addModifiers(Modifier.PRIVATE, Modifier.FINAL)
     .build();
-    
+
 TypeSpec helloWorld = TypeSpec.classBuilder("HelloWorld")
     .addModifiers(Modifier.PUBLIC)
     .addField(android)
@@ -829,18 +829,6 @@ License
     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
     See the License for the specific language governing permissions and
     limitations under the License.
-
-
-
-JavaWriter
-==========
-
-JavaPoet is the successor to [JavaWriter][javawriter]. New projects should prefer JavaPoet because
-it has a stronger code model: it understands types and can manage imports automatically. JavaPoet is
-also better suited to composition: rather than streaming the contents of a `.java` file
-top-to-bottom in a single pass, a file can be assembled as a tree of declarations.
-
-JavaWriter continues to be available in [GitHub][javawriter] and [Maven Central][javawriter_maven].
 
 
  [dl]: https://search.maven.org/remote_content?g=com.squareup&a=javapoet&v=LATEST
